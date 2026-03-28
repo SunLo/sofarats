@@ -694,7 +694,7 @@ dialog label:first-of-type { margin-top: 0; }
 
 dialog input[type="text"] { width: 100%; }
 dialog select { width: 100%; }
-#name-form button { width: 100%; margin-top: 0.5rem; }
+#name-form button { display: block; width: 100%; margin-top: 0.5rem; }
 
 .modal-actions {
   display: flex;
