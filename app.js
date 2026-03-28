@@ -8,11 +8,13 @@ const POLL_INTERVAL = 30_000;
 let currentUser    = null;
 let nights         = [];
 let movieList      = [];
+let presence       = {};
 let currentView    = 'active';
 let selectedMovies = [];
 let pendingNightId = null;
 let lastSaveAt     = 0;
-const SAVE_COOLDOWN = 8_000; // ms to skip remote refresh after a save
+const SAVE_COOLDOWN    = 8_000;
+const PRESENCE_TIMEOUT = 2 * 60 * 1000; // 2 minutes
 
 // --- DOM refs ---
 const sessionName        = document.getElementById('session-name');
@@ -84,7 +86,10 @@ async function init() {
   if (savedName) setUser(savedName);
   else nameModal.showModal();
   await refresh();
+  // Start presence after data is loaded so we don't overwrite with empty state
+  if (currentUser) presenceHeartbeat();
   setInterval(refresh, POLL_INTERVAL);
+  setInterval(presenceHeartbeat, POLL_INTERVAL);
 }
 
 function setUser(name) {
@@ -97,9 +102,11 @@ async function refresh() {
   if (Date.now() - lastSaveAt < SAVE_COOLDOWN) return;
   try {
     const data = await loadData();
-    nights    = data.nights || [];
-    movieList = data.movies || [];
+    nights    = data.nights   || [];
+    movieList = data.movies   || [];
+    presence  = data.presence || {};
     renderAll();
+    renderPresence();
   } catch {
     setSyncStatus('Could not load list', true);
   }
@@ -108,12 +115,25 @@ async function refresh() {
 async function persist() {
   setSyncStatus('Saving…');
   try {
-    await saveData({ nights, movies: movieList });
+    await saveData({ nights, movies: movieList, presence });
     lastSaveAt = Date.now();
     setSyncStatus('Saved');
   } catch {
     setSyncStatus('Save failed — check your connection', true);
   }
+}
+
+async function presenceHeartbeat() {
+  if (!currentUser) return;
+  const now    = Date.now();
+  const cutoff = now - PRESENCE_TIMEOUT;
+  presence[currentUser.name] = now;
+  // Prune stale entries
+  Object.keys(presence).forEach(k => { if (presence[k] < cutoff) delete presence[k]; });
+  renderPresence();
+  try {
+    await saveData({ nights, movies: movieList, presence });
+  } catch { /* presence is best-effort, fail silently */ }
 }
 
 function setSyncStatus(msg, isError = false) {
@@ -141,6 +161,7 @@ nameForm.addEventListener('submit', (e) => {
   setUser(name);
   nameModal.close();
   renderAll();
+  presenceHeartbeat();
 });
 
 changeNameBtn.addEventListener('click', () => {
@@ -421,6 +442,26 @@ async function toggleAttendance(tmdbId) {
   else movie.attendees[currentUser.name] = true;
   renderAll();
   await persist();
+}
+
+// --- Presence ---
+function renderPresence() {
+  const wrap = document.getElementById('presence-wrap');
+  const list = document.getElementById('presence-list');
+  if (!wrap || !list) return;
+
+  const cutoff = Date.now() - PRESENCE_TIMEOUT;
+  const active = Object.entries(presence)
+    .filter(([, ts]) => ts > cutoff)
+    .map(([name]) => name)
+    .sort();
+
+  if (!active.length) { wrap.hidden = true; return; }
+
+  wrap.hidden = false;
+  list.innerHTML = active
+    .map(name => `<span class="presence-chip${name === currentUser?.name ? ' presence-self' : ''}">${esc(name)}</span>`)
+    .join('');
 }
 
 // --- Render ---

@@ -1,5 +1,5 @@
 const GIST_ID    = 'cd6804644780de651061cfd528b0fc59';
-const GIST_TOKEN = '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';
+const GIST_TOKEN = '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';
 const GIST_FILE  = 'movies.json';
 
 async function loadData() {

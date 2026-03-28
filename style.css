@@ -105,6 +105,44 @@ header::after {
 }
 #change-name-btn:hover { color: var(--accent-hover); background: none; }
 
+/* --- Presence --- */
+#presence-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.presence-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+#presence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.presence-chip {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.presence-chip.presence-self {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+}
+
 /* --- Tab navigation --- */
 #tab-nav {
   display: flex;
@@ -656,6 +694,7 @@ dialog label:first-of-type { margin-top: 0; }
 
 dialog input[type="text"] { width: 100%; }
 dialog select { width: 100%; }
+#name-form button { width: 100%; margin-top: 0.5rem; }
 
 .modal-actions {
   display: flex;
