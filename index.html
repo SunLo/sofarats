@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sofarats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Sofarats</h1>
+    <p class="subtitle">So, what are we watching?</p>
+  </header>
+
+  <main>
+
+    <!-- Session banner -->
+    <section id="session-banner">
+      <p>Watching as <strong id="session-name">...</strong></p>
+      <span id="sync-status" class="sync-status"></span>
+      <button id="change-name-btn">Change name</button>
+    </section>
+
+    <!-- Tab navigation -->
+    <nav id="tab-nav">
+      <button class="tab-btn active" data-tab="active">Movie Nights</button>
+      <button class="tab-btn" data-tab="archive">Archive</button>
+    </nav>
+
+    <!-- Active view -->
+    <div id="view-active">
+
+      <section id="add-movie">
+        <h2>Suggest a movie</h2>
+        <div id="adding-to-banner" hidden>
+          Adding to: <strong id="adding-to-name"></strong>
+          <button type="button" id="adding-to-clear">✕</button>
+        </div>
+        <div class="search-row">
+          <input type="text" id="movie-search" placeholder="Search for a movie..." autocomplete="off" />
+          <button id="search-btn">Search</button>
+        </div>
+        <ul id="search-results"></ul>
+      </section>
+
+      <div id="nights-list"></div>
+
+      <button id="new-night-btn">+ New movie night</button>
+
+    </div>
+
+    <!-- Archive view -->
+    <div id="view-archive" hidden>
+      <div id="archive-list"></div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Name -->
+  <dialog id="name-modal">
+    <form id="name-form">
+      <h2>What's your name?</h2>
+      <p>No account needed — just enter your name for this session.</p>
+      <input type="text" id="name-input" placeholder="Your name" maxlength="30" required />
+      <button type="submit">Join</button>
+    </form>
+  </dialog>
+
+  <!-- Modal: Add movies -->
+  <dialog id="add-modal">
+    <form id="add-form">
+      <h2 id="add-modal-title"></h2>
+      <label for="reason-input">Why should we watch this? <span class="label-hint">optional</span></label>
+      <input type="text" id="reason-input" placeholder="e.g. Sarah has never seen it" maxlength="120" />
+      <label for="night-assign-select">Movie night <span class="label-hint">optional</span></label>
+      <select id="night-assign-select">
+        <option value="">— Ungrouped —</option>
+      </select>
+      <div class="modal-actions">
+        <button type="button" id="add-cancel">Cancel</button>
+        <button type="submit">Add to list</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal: New movie night -->
+  <dialog id="night-modal">
+    <form id="night-form">
+      <h2>New movie night</h2>
+      <label for="night-name-input">Name</label>
+      <input type="text" id="night-name-input" placeholder="e.g. Vampire Night" maxlength="60" required />
+      <label for="night-desc-input">Theme / description <span class="label-hint">optional</span></label>
+      <input type="text" id="night-desc-input" placeholder="e.g. All things that go bite in the night" maxlength="160" />
+      <div class="modal-actions">
+        <button type="button" id="night-cancel">Cancel</button>
+        <button type="submit">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modal: Confirm destructive action -->
+  <dialog id="confirm-modal">
+    <p id="confirm-message"></p>
+    <div class="modal-actions">
+      <button type="button" id="confirm-cancel">Cancel</button>
+      <button type="button" id="confirm-ok" class="btn-danger">Remove</button>
+    </div>
+  </dialog>
+
+  <script src="gist.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
