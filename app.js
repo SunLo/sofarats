@@ -505,12 +505,16 @@ function renderActiveView() {
 
 function buildNightCard(night, movies) {
   const card = document.createElement('div');
-  card.className = 'night-card';
+  card.className = 'night-card is-open';
   card.dataset.nightId = night.id;
 
-  // Header: name + status select
+  // ── Header (click to collapse/expand) ──────────────────────
   const header = document.createElement('div');
   header.className = 'night-header';
+
+  const icon = document.createElement('i');
+  icon.className = 'ph ph-popcorn night-icon';
+  icon.setAttribute('aria-hidden', 'true');
 
   const nameEl = document.createElement('h3');
   nameEl.className = 'night-name';
@@ -529,18 +533,58 @@ function buildNightCard(night, movies) {
     if (value === night.status) opt.selected = true;
     statusSel.appendChild(opt);
   });
+  statusSel.addEventListener('click', e => e.stopPropagation());
   statusSel.addEventListener('change', () => updateNightStatus(night.id, statusSel.value));
+
+  // Poster strip — collapsed preview, hidden when expanded
+  const strip = document.createElement('div');
+  strip.className = 'night-poster-strip';
+  const MAX_THUMBS = 4;
+  movies.slice(0, MAX_THUMBS).forEach(m => {
+    if (m.poster) {
+      const img = document.createElement('img');
+      img.src = m.poster;
+      img.alt = '';
+      img.className = 'night-poster-thumb';
+      strip.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'night-poster-thumb night-poster-placeholder';
+      strip.appendChild(ph);
+    }
+  });
+  if (movies.length > MAX_THUMBS) {
+    const more = document.createElement('div');
+    more.className = 'night-poster-more';
+    more.textContent = `+${movies.length - MAX_THUMBS}`;
+    strip.appendChild(more);
+  }
+  if (movies.length === 0) {
+    const emptyHint = document.createElement('span');
+    emptyHint.className = 'night-poster-empty-hint';
+    emptyHint.textContent = 'Empty';
+    strip.appendChild(emptyHint);
+  }
 
   const removeBtn = document.createElement('button');
   removeBtn.className = 'btn-remove-night';
   removeBtn.title = 'Remove movie night';
   removeBtn.textContent = '✕';
-  removeBtn.addEventListener('click', () => removeNight(night.id));
+  removeBtn.addEventListener('click', e => { e.stopPropagation(); removeNight(night.id); });
 
-  header.append(nameEl, statusSel, removeBtn);
+  header.append(icon, nameEl, statusSel, strip, removeBtn);
   card.appendChild(header);
 
-  // Optional date row (only when planned)
+  // ── Body (collapsible) ──────────────────────────────────────
+  const body = document.createElement('div');
+  body.className = 'night-body';
+
+  header.addEventListener('click', () => {
+    const open = card.classList.toggle('is-open');
+    body.hidden = !open;
+  });
+
+  // Date row (only when planned)
   if (night.status === 'planned') {
     const dateRow = document.createElement('div');
     dateRow.className = 'night-date-row';
@@ -553,7 +597,7 @@ function buildNightCard(night, movies) {
     dateInput.value = night.date || '';
     dateInput.addEventListener('change', () => updateNightDate(night.id, dateInput.value));
     dateRow.append(lbl, dateInput);
-    card.appendChild(dateRow);
+    body.appendChild(dateRow);
   }
 
   // Description
@@ -561,7 +605,7 @@ function buildNightCard(night, movies) {
     const desc = document.createElement('p');
     desc.className = 'night-description';
     desc.textContent = night.description;
-    card.appendChild(desc);
+    body.appendChild(desc);
   }
 
   // Movie list
@@ -569,17 +613,21 @@ function buildNightCard(night, movies) {
     const ul = document.createElement('ul');
     ul.className = 'night-movies';
     movies.forEach(m => ul.appendChild(buildMovieCard(m)));
-    card.appendChild(ul);
+    body.appendChild(ul);
   } else {
     const empty = document.createElement('p');
     empty.className = 'night-empty';
     empty.textContent = 'No movies yet.';
-    card.appendChild(empty);
+    body.appendChild(empty);
   }
 
-  // Footer
+  // Footer: add movie + edit toggle
   const footer = document.createElement('div');
   footer.className = 'night-footer';
+
+  const footerRow = document.createElement('div');
+  footerRow.className = 'night-footer-row';
+
   const addBtn = document.createElement('button');
   addBtn.className = 'btn-add-to-night';
   addBtn.textContent = '+ Add movie';
@@ -588,9 +636,79 @@ function buildNightCard(night, movies) {
     movieSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     movieSearchInput.focus();
   });
-  footer.appendChild(addBtn);
-  card.appendChild(footer);
 
+  const editToggle = document.createElement('button');
+  editToggle.className = 'btn-night-edit-toggle';
+  editToggle.textContent = 'Edit ▾';
+
+  // Edit panel (name, description, save, remove)
+  const editPanel = document.createElement('div');
+  editPanel.className = 'night-edit-panel';
+  editPanel.hidden = true;
+
+  const nameLabel = document.createElement('label');
+  nameLabel.textContent = 'Name';
+  nameLabel.className = 'night-edit-label';
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'night-edit-input';
+  nameInput.value = night.name;
+  nameInput.maxLength = 60;
+
+  const descLabel = document.createElement('label');
+  descLabel.textContent = 'Description';
+  descLabel.className = 'night-edit-label';
+  const descInput = document.createElement('input');
+  descInput.type = 'text';
+  descInput.className = 'night-edit-input';
+  descInput.value = night.description || '';
+  descInput.maxLength = 160;
+  descInput.placeholder = 'Theme or description (optional)';
+
+  const editActions = document.createElement('div');
+  editActions.className = 'night-edit-actions';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn-night-save';
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', async () => {
+    const newName = nameInput.value.trim();
+    if (!newName) { nameInput.focus(); return; }
+    const newDesc = descInput.value.trim();
+    const changed = newName !== night.name || newDesc !== (night.description || '');
+    if (changed) {
+      night.name = newName;
+      night.description = newDesc || null;
+      renderAll();
+      await persist();
+    } else {
+      editPanel.hidden = true;
+      editToggle.classList.remove('open');
+      editToggle.textContent = 'Edit ▾';
+    }
+  });
+
+  const removeInPanel = document.createElement('button');
+  removeInPanel.className = 'btn-remove-night-panel';
+  removeInPanel.textContent = 'Remove viewing';
+  removeInPanel.addEventListener('click', () => removeNight(night.id));
+
+  editActions.append(saveBtn, removeInPanel);
+  editPanel.append(nameLabel, nameInput, descLabel, descInput, editActions);
+
+  editToggle.addEventListener('click', () => {
+    const open = editPanel.hidden;
+    editPanel.hidden = !open;
+    editToggle.classList.toggle('open', open);
+    editToggle.textContent = open ? 'Done ✕' : 'Edit ▾';
+    if (open) nameInput.focus();
+  });
+
+  footerRow.append(addBtn, editToggle);
+  footer.append(footerRow, editPanel);
+  body.appendChild(footer);
+
+  card.appendChild(body);
   return card;
 }
 

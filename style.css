@@ -153,7 +153,7 @@ header::after {
   gap: 3rem;
   margin-bottom: 2.5rem;
   position: relative;
-  padding-bottom: 2.25rem;
+  padding-bottom: 3.5rem;
 }
 
 /* Spotlight beam — cone rotating from torch pivot */
@@ -163,14 +163,14 @@ header::after {
   bottom: 0;
   left: 50%;
   width: 340px;
-  height: 2.25rem;
+  height: 3.5rem;
   background: linear-gradient(
     to top,
     transparent 0%,
-    rgba(232, 180, 78, 0.06) 35%,
-    rgba(232, 180, 78, 0.18) 100%
+    rgba(232, 180, 78, 0.18) 40%,
+    rgba(232, 180, 78, 0.55) 100%
   );
-  clip-path: polygon(50% 100%, 4% 0%, 96% 0%);
+  clip-path: polygon(50% 100%, 8% 0%, 92% 0%);
   transform-origin: 50% 100%;
   transform: translateX(-50%) rotate(var(--beam-rotate));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -382,13 +382,87 @@ button:hover { background: var(--accent-hover); }
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: none;
+  transition: background 0.15s;
+}
+.night-header:hover { background: rgba(255,255,255,0.02); }
+.night-card.is-open .night-header { border-bottom: 1px solid var(--border); }
+
+/* Chevron indicator */
+.night-header::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: rotate(-45deg);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  margin-top: 1px;
+}
+.night-card.is-open .night-header::before { transform: rotate(45deg); }
+
+/* Popcorn icon */
+.night-icon {
+  font-size: 1.1rem;
+  color: var(--accent);
+  opacity: 0.7;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .night-name {
   font-size: 1rem;
   font-weight: 600;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Poster strip — collapsed preview */
+.night-poster-strip {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-right: 0.25rem;
+}
+.night-card.is-open .night-poster-strip { display: none; }
+
+.night-poster-thumb {
+  width: 28px; height: 42px;
+  border-radius: 3px;
+  object-fit: cover;
+  border: 2px solid var(--surface);
+  flex-shrink: 0;
+  display: block;
+}
+.night-poster-thumb + .night-poster-thumb { margin-left: -10px; }
+
+.night-poster-placeholder { background: var(--border); }
+
+.night-poster-more {
+  width: 28px; height: 42px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  margin-left: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.night-poster-empty-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.5;
 }
 
 /* Status badge */
@@ -477,6 +551,12 @@ button:hover { background: var(--accent-hover); }
 .night-footer::before { left: -7px; }
 .night-footer::after  { right: -7px; }
 
+.night-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .btn-add-to-night {
   background: none;
   border: none;
@@ -487,6 +567,50 @@ button:hover { background: var(--accent-hover); }
   cursor: pointer;
 }
 .btn-add-to-night:hover { color: var(--accent); background: none; }
+
+.btn-night-edit-toggle {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 0.72rem;
+  font-weight: 500; padding: 0; cursor: pointer;
+  opacity: 0.55; letter-spacing: 0.02em;
+  transition: opacity 0.15s, color 0.15s;
+}
+.btn-night-edit-toggle:hover { background: none; color: var(--accent); opacity: 1; }
+.btn-night-edit-toggle.open { color: var(--accent); opacity: 1; }
+
+/* Night edit panel */
+.night-edit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+.night-edit-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.1rem;
+}
+.night-edit-input { width: 100%; font-size: 0.88rem; padding: 0.35rem 0.65rem; }
+.night-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.15rem;
+}
+.btn-night-save {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+}
+.btn-remove-night-panel {
+  background: none; border: none;
+  color: #c05050; font-size: 0.72rem;
+  font-weight: 500; padding: 0; cursor: pointer;
+}
+.btn-remove-night-panel:hover { background: none; color: #e07070; }
 
 /* Ungrouped section */
 .ungrouped-section { overflow: visible; }
@@ -578,7 +702,7 @@ button:hover { background: var(--accent-hover); }
 .movie-meta { font-size: 0.78rem; color: var(--text-muted); }
 .movie-reason {
   font-size: 0.82rem;
-  color: var(--accent);
+  color: var(--accent, 50%);
   display: flex;
   align-items: center;
   gap: 0.35rem;
