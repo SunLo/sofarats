@@ -15,6 +15,7 @@
 
 /* --- Reset --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
 
 body {
   background: var(--bg);
@@ -583,16 +584,16 @@ button:hover { background: var(--accent-hover); }
 }
 
 .btn-assign-night {
-  font-size: 0.72rem; font-weight: 500;
-  padding: 0.22rem 0.65rem;
-  background: var(--surface); color: var(--text-muted);
-  border: 1px solid var(--border); border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--text-muted); border-radius: 6px;
 }
-.btn-assign-night:hover { background: var(--surface); color: var(--text); border-color: var(--text-muted); }
+.btn-assign-night:hover { background: var(--surface-raised); color: var(--text); border-color: var(--text); }
 
 .btn-remove-movie-inline {
   background: none; border: none;
-  color: var(--text-muted); font-size: 0.72rem;
+  color: #c05050; font-size: 0.72rem;
   font-weight: 500; padding: 0; cursor: pointer;
 }
 .btn-remove-movie-inline:hover { background: none; color: #e07070; }
