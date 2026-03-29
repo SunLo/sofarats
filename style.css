@@ -162,32 +162,28 @@ header::after {
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: 280px;
-  height: 5rem;
-  background: linear-gradient(
-    to top,
-    transparent 0%,
-    rgba(232, 180, 78, 0.10) 35%,
-    rgba(232, 180, 78, 0.28) 100%
-  );
-  clip-path: polygon(50% 100%, 28% 0%, 72% 0%);
+  width: 270px;
+  height: 9rem;
+  background: linear-gradient( to top, transparent 0%, rgba(244, 175, 39, 0.4) 7%, rgba(232, 180, 78, 0.15) 90% );
+  clip-path: polygon(50% 100%, 30% -27.9%, 68.00% -29.32%);
   transform-origin: 50% 100%;
   transform: translateX(-50%) rotate(var(--beam-rotate));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: blur(50px);
+  filter: blur(23px);
   pointer-events: none;
+  z-index: -1;
 }
 
 /* Torch icon — rotates to aim at active tab */
 #tab-torch {
   position: absolute;
-  bottom: 4px;
+  bottom: -2px;
   left: 50%;
   margin-left: -1rem;
   font-size: 2rem;
   color: var(--accent);
   transform-origin: center bottom;
-  transform: rotate(calc(var(--beam-rotate) + 45deg));
+  transform: rotate(calc(var(--beam-rotate) + 0deg));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 8px rgba(232, 180, 78, 0.65));
   pointer-events: none;
