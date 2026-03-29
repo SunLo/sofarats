@@ -149,6 +149,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
     document.getElementById('view-active').hidden  = currentView !== 'active';
     document.getElementById('view-archive').hidden = currentView !== 'archive';
+    document.getElementById('tab-nav').classList.toggle('tab-active-archive', currentView === 'archive');
     renderAll();
   });
 });
