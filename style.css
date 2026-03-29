@@ -486,26 +486,36 @@ button:hover { background: var(--accent-hover); }
 /* --- Movie cards --- */
 .movie-card {
   display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 0.9rem;
+  grid-template-columns: 60px 1fr auto;
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 0.85rem;
+  overflow: visible;
+  position: relative;
 }
 
-.movie-card img, .poster-placeholder {
-  width: 60px; height: 90px;
-  border-radius: 6px;
+/* Poster — flush to left edge, fills card height */
+.movie-card > img,
+.movie-card > .poster-placeholder {
+  width: 60px;
+  min-height: 90px;
+  align-self: stretch;
+  border-radius: 8px 0 0 8px;
   background: var(--border);
   object-fit: cover;
-  flex-shrink: 0;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.5), 6px 6px 0 rgba(0,0,0,0.25);
+  display: block;
 }
 
-.movie-card-body { display: flex; flex-direction: column; gap: 0.3rem; }
+/* Left body */
+.movie-card-info {
+  padding: 0.75rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
 
-.movie-card-body h3 {
+.movie-card-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
   display: flex;
@@ -513,6 +523,7 @@ button:hover { background: var(--accent-hover); }
   gap: 0.4rem;
   flex-wrap: wrap;
 }
+
 .movie-year { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
 .movie-meta { font-size: 0.78rem; color: var(--text-muted); }
 .movie-reason {
@@ -551,46 +562,143 @@ button:hover { background: var(--accent-hover); }
 }
 .reason-edit-cancel:hover { background: var(--surface-raised); color: var(--text); }
 
-.movie-actions {
+/* Edit toggle + collapsed action panel */
+.movie-edit-wrap { margin-top: auto; padding-top: 0.4rem; }
+
+.btn-toggle-edit {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 0.72rem;
+  font-weight: 500; padding: 0; cursor: pointer;
+  opacity: 0.55; letter-spacing: 0.02em;
+  transition: opacity 0.15s, color 0.15s;
+}
+.btn-toggle-edit:hover { background: none; color: var(--accent); opacity: 1; }
+.btn-toggle-edit.open  { color: var(--accent); opacity: 1; }
+
+.movie-edit-panel {
   display: flex;
+  gap: 0.45rem;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
-  flex-wrap: wrap;
+  margin-top: 0.35rem;
 }
 
-.btn-im-in {
-  font-size: 0.78rem; font-weight: 600;
-  padding: 0.28rem 0.75rem;
+.btn-assign-night {
+  font-size: 0.72rem; font-weight: 500;
+  padding: 0.22rem 0.65rem;
   background: var(--surface); color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border); border-radius: 20px;
+}
+.btn-assign-night:hover { background: var(--surface); color: var(--text); border-color: var(--text-muted); }
+
+.btn-remove-movie-inline {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 0.72rem;
+  font-weight: 500; padding: 0; cursor: pointer;
+}
+.btn-remove-movie-inline:hover { background: none; color: #e07070; }
+
+/* Night picker chips (shown after clicking assign) */
+.night-picker { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+.night-pick-btn {
+  font-size: 0.68rem; font-weight: 500;
+  padding: 0.18rem 0.55rem;
+  background: var(--surface); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 20px;
+}
+.night-pick-btn:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+/* Ticket stub — right side with vertical perforation */
+.movie-card-stub {
+  width: 82px;
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  position: relative;
+  text-align: center;
+  /* Dashed perforation line on left edge */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--border) 0,
+    var(--border) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+  background-size: 1px 100%;
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+/* Notch circles at top and bottom of perforation */
+.movie-card-stub::before,
+.movie-card-stub::after {
+  content: '';
+  position: absolute;
+  left: -7px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.movie-card-stub::before { top: -7px; }
+.movie-card-stub::after  { bottom: -7px; }
+
+.stub-attendance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.btn-attendee-count {
+  background: none; border: none; padding: 0;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; line-height: 1;
+}
+.btn-attendee-count:hover { background: none; }
+
+.count-num {
+  font-size: 1.5rem; font-weight: 700;
+  color: var(--accent);
+  font-family: 'Playfair Display', serif;
+  line-height: 1;
+}
+.count-label {
+  font-size: 0.6rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.stub-names {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.15rem; width: 100%;
+}
+.stub-name {
+  font-size: 0.65rem; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 100%; display: block;
+}
+.stub-name.is-self { color: var(--accent); }
+
+.btn-im-in {
+  font-size: 0.72rem; font-weight: 600;
+  padding: 0.28rem 0.5rem;
+  background: var(--surface); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 6px;
+  width: 100%;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 .btn-im-in:hover { background: var(--surface); color: var(--text); border-color: var(--text-muted); }
 .btn-im-in.active { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
 .btn-im-in.active:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-
-.attendees { font-size: 0.78rem; color: var(--text-muted); cursor: default; }
-
-.move-to-select {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  border-radius: 6px;
-  margin-left: auto;
-}
-.move-to-select:hover { border-color: var(--text-muted); color: var(--text); }
-
-.btn-remove-movie {
-  background: none; border: none;
-  color: var(--text-muted); font-size: 0.75rem;
-  padding: 0; cursor: pointer;
-  opacity: 0; transition: opacity 0.15s; margin-left: auto;
-}
-.movie-card:hover .btn-remove-movie { opacity: 1; }
-.btn-remove-movie:hover { background: none; color: #e07070; }
 
 /* --- Archive --- */
 #archive-list { display: flex; flex-direction: column; gap: 1rem; }

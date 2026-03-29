@@ -598,60 +598,109 @@ function buildMovieCard(movie) {
   const attendeeNames = Object.keys(movie.attendees);
   const attendeeCount = attendeeNames.length;
 
-  // Build "Move to..." options
   const otherNights = nights.filter(n => n.status !== 'completed' && n.id !== movie.nightId);
-  const canMove     = otherNights.length > 0 || !!movie.nightId;
-  let moveToHtml = '';
-  if (canMove) {
-    const options = [
-      '<option value="" disabled selected>Move to…</option>',
-      movie.nightId ? '<option value="__none__">— Ungrouped —</option>' : '',
-      ...otherNights.map(n => `<option value="${n.id}">${esc(n.name)}</option>`),
-    ].join('');
-    moveToHtml = `<select class="move-to-select">${options}</select>`;
-  }
+  const hasAssigned  = !!movie.nightId;
+  const canAssign    = otherNights.length > 0 || hasAssigned;
 
   const li = document.createElement('li');
   li.className = 'movie-card';
   li.dataset.tmdbId = movie.tmdbId;
+
   li.innerHTML = `
     ${movie.poster
       ? `<img src="${movie.poster}" alt="${esc(movie.title)} poster" />`
       : '<div class="poster-placeholder"></div>'}
-    <div class="movie-card-body">
+    <div class="movie-card-info">
       <h3>${esc(movie.title)} <span class="movie-year">${esc(movie.year)}</span></h3>
       <p class="movie-meta">Suggested by ${esc(movie.suggestedBy)}</p>
       <div class="movie-reason-wrap">
         ${movie.reason
-          ? `<p class="movie-reason">"${esc(movie.reason)}" <button class="btn-edit-reason" title="Edit">✎</button></p>`
+          ? `<p class="movie-reason">"${esc(movie.reason)}" <button class="btn-edit-reason" title="Edit reason">✎</button></p>`
           : `<button class="btn-add-reason">+ Add reason</button>`}
       </div>
-      <div class="movie-actions">
-        <button class="btn-im-in ${isAttending ? 'active' : ''}">
-          ${isAttending ? '✓ I\'m in' : 'I\'m in'}
-        </button>
-        <span class="attendees" title="${esc(attendeeNames.join(', '))}">
-          ${attendeeCount} ${attendeeCount === 1 ? 'person' : 'people'} in
-        </span>
-        ${moveToHtml}
-        <button class="btn-remove-movie" title="Remove">✕</button>
+      <div class="movie-edit-wrap">
+        <button class="btn-toggle-edit" type="button">Edit ▾</button>
+        <div class="movie-edit-panel" hidden>
+          ${canAssign ? `<button class="btn-assign-night" type="button">${hasAssigned ? 'Move' : 'Add to viewing'}</button>` : ''}
+          <button class="btn-remove-movie-inline" type="button">Remove</button>
+        </div>
+        ${canAssign ? '<div class="night-picker" hidden></div>' : ''}
       </div>
+    </div>
+    <div class="movie-card-stub">
+      <div class="stub-attendance">
+        <button class="btn-attendee-count" type="button" title="Show who's in">
+          <span class="count-num">${attendeeCount}</span>
+          <span class="count-label">${attendeeCount === 1 ? 'person' : 'people'}</span>
+        </button>
+        <div class="stub-names" hidden>
+          ${attendeeNames.length
+            ? attendeeNames.map(n => `<span class="stub-name${n === currentUser?.name ? ' is-self' : ''}">${esc(n)}</span>`).join('')
+            : '<span class="stub-name" style="font-style:italic">—</span>'}
+        </div>
+      </div>
+      <button class="btn-im-in ${isAttending ? 'active' : ''}" type="button">
+        ${isAttending ? '✓ In' : 'I\'m in'}
+      </button>
     </div>
   `;
 
+  // I'm in
   li.querySelector('.btn-im-in').addEventListener('click', () => toggleAttendance(movie.tmdbId));
 
+  // Reason editing
   li.querySelector('.btn-edit-reason')
     ?.addEventListener('click', () => startEditReason(movie.tmdbId, movie.reason));
   li.querySelector('.btn-add-reason')
     ?.addEventListener('click', () => startEditReason(movie.tmdbId, null));
 
-  li.querySelector('.btn-remove-movie').addEventListener('click', () => removeMovie(movie.tmdbId));
-
-  li.querySelector('.move-to-select')?.addEventListener('change', (e) => {
-    const val = e.target.value;
-    moveMovie(movie.tmdbId, val === '__none__' ? null : val);
+  // Attendee names toggle
+  li.querySelector('.btn-attendee-count').addEventListener('click', () => {
+    const names = li.querySelector('.stub-names');
+    names.hidden = !names.hidden;
   });
+
+  // Edit panel toggle
+  const editToggle  = li.querySelector('.btn-toggle-edit');
+  const editPanel   = li.querySelector('.movie-edit-panel');
+  const nightPicker = li.querySelector('.night-picker');
+
+  editToggle.addEventListener('click', () => {
+    const opening = editPanel.hidden;
+    editPanel.hidden = !opening;
+    if (nightPicker) nightPicker.hidden = true;
+    editToggle.classList.toggle('open', opening);
+    editToggle.textContent = opening ? 'Edit ▴' : 'Edit ▾';
+  });
+
+  // Night assignment
+  const assignBtn = li.querySelector('.btn-assign-night');
+  if (assignBtn && nightPicker) {
+    const options = [
+      ...(hasAssigned ? [{ id: '__none__', name: '— Ungrouped —' }] : []),
+      ...otherNights.map(n => ({ id: n.id, name: n.name })),
+    ];
+    if (options.length === 1) {
+      // Only one destination — assign immediately on click
+      assignBtn.addEventListener('click', () =>
+        moveMovie(movie.tmdbId, options[0].id === '__none__' ? null : options[0].id)
+      );
+    } else {
+      // Multiple options — show picker chips
+      nightPicker.innerHTML = options
+        .map(o => `<button class="night-pick-btn" type="button" data-night-id="${o.id}">${esc(o.name)}</button>`)
+        .join('');
+      assignBtn.addEventListener('click', () => { nightPicker.hidden = !nightPicker.hidden; });
+      nightPicker.querySelectorAll('.night-pick-btn').forEach(btn =>
+        btn.addEventListener('click', () =>
+          moveMovie(movie.tmdbId, btn.dataset.nightId === '__none__' ? null : btn.dataset.nightId)
+        )
+      );
+    }
+  }
+
+  // Remove
+  li.querySelector('.btn-remove-movie-inline').addEventListener('click', () => removeMovie(movie.tmdbId));
 
   return li;
 }
@@ -699,7 +748,7 @@ function renderArchiveView() {
         const attendeeNames = Object.keys(m.attendees);
         li.innerHTML = `
           ${m.poster ? `<img src="${m.poster}" alt="${esc(m.title)} poster" />` : '<div class="poster-placeholder"></div>'}
-          <div class="movie-card-body">
+          <div class="movie-card-info">
             <h3>${esc(m.title)} <span class="movie-year">${esc(m.year)}</span></h3>
             <p class="movie-meta">Suggested by ${esc(m.suggestedBy)}</p>
             ${m.reason ? `<p class="movie-reason">"${esc(m.reason)}"</p>` : ''}
