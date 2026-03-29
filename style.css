@@ -186,7 +186,7 @@ header::after {
   font-size: 2rem;
   color: var(--accent);
   transform-origin: center bottom;
-  transform: rotate(var(--beam-rotate));
+  transform: rotate(calc(var(--beam-rotate) - 90deg));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 8px rgba(232, 180, 78, 0.65));
   pointer-events: none;
