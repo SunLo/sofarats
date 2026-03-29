@@ -167,8 +167,8 @@ header::after {
   background: linear-gradient(
     to top,
     transparent 0%,
-    rgba(232, 180, 78, 0.18) 40%,
-    rgba(232, 180, 78, 0.55) 100%
+    rgba(232, 180, 78, 0.10) 40%,
+    rgba(232, 180, 78, 0.30) 100%
   );
   clip-path: polygon(50% 100%, 8% 0%, 92% 0%);
   transform-origin: 50% 100%;
@@ -177,22 +177,21 @@ header::after {
   pointer-events: none;
 }
 
-/* Torch lens — glowing pivot dot */
-#tab-nav::after {
-  content: '';
+/* Torch icon — rotates to aim at active tab */
+#tab-torch {
   position: absolute;
-  bottom: -1px;
+  bottom: 2px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow:
-    0 0 6px  rgba(232, 180, 78, 0.9),
-    0 0 14px rgba(232, 180, 78, 0.5),
-    0 0 28px rgba(232, 180, 78, 0.2);
+  margin-left: -0.75rem;
+  font-size: 1.5rem;
+  color: var(--accent);
+  transform-origin: center bottom;
+  transform: rotate(var(--beam-rotate));
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px rgba(232, 180, 78, 0.7));
+  pointer-events: none;
   z-index: 2;
+  line-height: 1;
 }
 
 /* Beam swings right when archive is active */
@@ -216,9 +215,7 @@ header::after {
 .tab-btn:hover { color: var(--text); background: none; }
 .tab-btn.active {
   color: var(--accent);
-  text-shadow:
-    0 0 14px rgba(232, 180, 78, 0.8),
-    0 0 30px rgba(232, 180, 78, 0.35);
+  text-shadow: 0 0 18px rgba(232, 180, 78, 0.35);
 }
 
 /* --- Section headings --- */
