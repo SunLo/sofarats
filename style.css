@@ -174,7 +174,7 @@ header::after {
   transform-origin: 50% 100%;
   transform: translateX(-50%) rotate(var(--beam-rotate));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: blur(10px);
+  filter: blur(50px);
   pointer-events: none;
 }
 
@@ -187,7 +187,7 @@ header::after {
   font-size: 2rem;
   color: var(--accent);
   transform-origin: center bottom;
-  transform: rotate(calc(var(--beam-rotate) + 90deg));
+  transform: rotate(calc(var(--beam-rotate) + 45deg));
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 8px rgba(232, 180, 78, 0.65));
   pointer-events: none;
